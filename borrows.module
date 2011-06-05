@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ *   Main module file.
+ */
+
+
+/**
+ * Implementation of hook_calendar_block().
+ */
+function borrows_calendar_block(&$calendar, &$date, $op) {
+  switch($op) {
+    case 'load':
+/*
+      // Example: set a fixed date.
+      $calendar->month = 10;
+      $calendar->year = 1978;
+*/
+
+      break;
+    case 'alter':
+      $date->content  = '<label class="option" for="' . $date->date . '" style="font-size: 12px;">';
+      $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="form-checkbox" />';
+      $date->content .= $date->day . '</label>';
+      break;
+  }
+}

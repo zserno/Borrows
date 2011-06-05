@@ -1,0 +1,8 @@
+name = Borrows
+description = "Allows booking of resources."
+package = "Bookings"
+
+core = 6.x
+dependencies[] = calendar_block
+dependencies[] = bookingsapi
+dependencies[] = views
