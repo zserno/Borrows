@@ -1,0 +1,17 @@
+#calendar .week .hok span {
+  color: #494949;
+  font-size: 12px !important;
+  line-height: 16px;
+  text-align: center;
+}
+
+#calendar .week .hok span input {
+  margin: 0 3px 0 0;
+}
+
+#calendar .week .hok.today {
+  background: none;
+  box-shadow: 5px 5px 10px -4px #888888 inset;
+  -moz-box-shadow: 5px 5px 10px -4px #888888 inset;
+  -webkit-box-shadow: 5px 5px 10px -4px #888888 inset;
+}
