@@ -17,12 +17,15 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       $calendar->month = 10;
       $calendar->year = 1978;
 */
-
+      drupal_add_css(drupal_get_path('module', 'borrows') . '/css/borrows.css');
       break;
     case 'alter':
-      $date->content  = '<label class="option" for="' . $date->date . '" style="font-size: 12px;">';
-      $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="form-checkbox" />';
-      $date->content .= $date->day . '</label>';
+      //dpm($date);
+      if (!in_array($date->weekday, array('sa', 'su'))) {
+        $date->content  = '<label class="option" for="' . $date->date . '">';
+        $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="form-checkbox" />';
+        $date->content .= $date->day . '</label>';
+      }
       break;
   }
 }
