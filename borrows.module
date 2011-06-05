@@ -12,16 +12,18 @@
 function borrows_calendar_block(&$calendar, &$date, $op) {
   switch($op) {
     case 'load':
-/*
-      // Example: set a fixed date.
-      $calendar->month = 10;
-      $calendar->year = 1978;
-*/
       drupal_add_css(drupal_get_path('module', 'borrows') . '/css/borrows.css');
       break;
     case 'alter':
       //dpm($date);
-      if (!in_array($date->weekday, array('sa', 'su'))) {
+      //dpm($calendar);
+
+      $is_weekday = !in_array($date->weekday, array('sa', 'su'));
+      // Do not allow booking for today and tomorrow.
+      // strtotime() needs a bit of help.
+      $is_allowed = (strtotime($date->day . '-' . $date->month . '-' . $date->year) >= (strtotime('tomorrow') + (24 * 60 * 60)));
+
+      if ($is_weekday && $is_allowed) {
         $date->content  = '<label class="option" for="' . $date->date . '">';
         $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="form-checkbox" />';
         $date->content .= $date->day . '</label>';
