@@ -49,7 +49,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
   }
 }
 
-function borrows_ajax($nid) {
+function borrows_ajax($nid = NULL) {
   if ($node = node_load($nid)) {
     if ($node->type == BORROWS_RESOURCE_CT) {
       $booking_info = array(
