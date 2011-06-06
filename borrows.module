@@ -59,5 +59,5 @@ function borrows_ajax($nid) {
       //return $node->title;
     }
   }
-  return 'null';
+  return drupal_json();
 }
