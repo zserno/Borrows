@@ -5,6 +5,20 @@
  *   Main module file.
  */
 
+define("BORROWS_RESOURCE_CT", "bookingsapi_resource");
+
+
+/**
+ * Implementation of hook_menu().
+ */
+function borrows_menu() {
+  $items['borrows_ajax'] = array(
+    'page callback' => 'borrows_ajax',
+    'access arguments' => array('access content'), // @TODO Adjust.
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
 
 /**
  * Implementation of hook_calendar_block().
@@ -33,4 +47,17 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       }
       break;
   }
+}
+
+function borrows_ajax($nid) {
+  if ($node = node_load($nid)) {
+    if ($node->type == BORROWS_RESOURCE_CT) {
+      $booking_info = array(
+        'allowed_days' => $node->field_allowed_days[0]['value'],
+      );
+      return drupal_json($booking_info);
+      //return $node->title;
+    }
+  }
+  return 'null';
 }
