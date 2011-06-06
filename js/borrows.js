@@ -1,8 +1,8 @@
-// Handle user interactions on calendar.
+/**
+ * Handle user interactions on calendar.
+ */
 (function ($, Drupal) {
   Drupal.behaviors.borrowsCalendar = function(context) {
-    // Initialize Drupal.settings.borrows.
-    Drupal.settings.borrows = {};
     $("#calendar .week input.form-checkbox", context).click(function() {
       $("#calendar", context).block({
         // @TODO make path dynamic.
