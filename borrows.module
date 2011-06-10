@@ -102,9 +102,17 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
 function borrows_ajax($nid = NULL) {
   if ($node = node_load($nid)) {
     if ($node->type == BORROWS_RESOURCE_CT) {
+      $node_allowed_days = $node->field_allowed_days[0]['value'];
+
+      // @TODO implement this using bookingsapi.
+      $days_till_next_booking = 30;
+
+      $prebooking = variable_get('borrows_prebooking', BORROWS_PREBOOKING_DAYS);
+
       $booking_info = array(
-        'allowed_days' => $node->field_allowed_days[0]['value'],
+        'allowed_days' => min($node_allowed_days, $days_till_next_booking, $prebooking),
       );
+
       return drupal_json($booking_info);
     }
   }
