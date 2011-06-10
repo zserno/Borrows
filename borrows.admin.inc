@@ -23,7 +23,7 @@ function borrows_admin_form(&$form_state) {
     '#title' => t('Public holidays'),
     '#description' => t('Define which weekdays are public holidays.<br/>
       Enter one day per line in the following format: YYYY-MM-DD, e.g. !date', array('!date' => date('Y-m-d'))),
-    '#default_value' => variable_get('borrows_holidays', ''),
+    '#default_value' => variable_get('borrows_holidays', NULL),
     '#rows' => 8,
   );
 
@@ -32,7 +32,7 @@ function borrows_admin_form(&$form_state) {
     '#title' => t('Working days on weekends'),
     '#description' => t('Define which weekend days are working days.<br/>
       Enter one day per line in the following format: YYYY-MM-DD, e.g. !date', array('!date' => date('Y-m-d'))),
-    '#default_value' => variable_get('borrows_weekends', ''),
+    '#default_value' => variable_get('borrows_weekends', NULL),
     '#rows' => 8,
   );
 
@@ -54,28 +54,28 @@ function borrows_admin_form(&$form_state) {
     '#title' => t('E-mail template for user'),
     '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_user_booking_template', ''),
-    '#rows' => 8,
+    '#rows' => 12,
   );
   $form['borrows_mail_templates']['borrows_user_cancellation_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for cancellation as sent to user'),
     '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_user_cancellation_template', ''),
-    '#rows' => 8,
+    '#rows' => 12,
   );
   $form['borrows_mail_templates']['borrows_admin_booking_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for admin'),
     '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_admin_booking_template', ''),
-    '#rows' => 8,
+    '#rows' => 12,
   );
   $form['borrows_mail_templates']['borrows_admin_cancellation_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for cancellation as sent to admin'),
     '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_admin_cancellation_template', ''),
-    '#rows' => 8,
+    '#rows' => 12,
   );
 
   $form['borrows_mail_templates']['help'] = array(

@@ -1,1 +1,7 @@
 Yet another booking module for Drupal...
+
+I. INSTALLATION
+Install as usual.
+Important: calendar_block needs to be patched: http://drupal.org/node/1179542#comment-4561264
+
+II. USAGE
