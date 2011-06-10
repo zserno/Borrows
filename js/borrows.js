@@ -7,6 +7,8 @@
     // Global semaphore to track if a booking has started.
     // E.g. there is at least one active checkbox.
     Drupal.settings.borrows.semaphore = false;
+    // Remove submit button, e.g. when changing month.
+    $("#borrows-submit").remove();
 
     $("#calendar .week input.form-checkbox", context).click(function() {
       if (Drupal.settings.borrows.semaphore == false) {
@@ -85,7 +87,17 @@ function borrowsAjax(dataToSend, $checkbox) {
 }
 
 function borrowsSubmit() {
-  $("#calendar .week input.form-checkbox[checked]").each(function(value) {
-    console.log($(this).val());
-  });
+  var selectedDays = $("#calendar .week input.form-checkbox[checked]");
+
+  if (borrowsValidate(selectedDays)) {
+    selectedDays.each(function(value) {
+      console.log($(this).val());
+    });
+  }
+}
+
+// @TODO Implement me.
+function borrowsValidate(selectedDays) {
+  console.log("Valid.");
+  return true;
 }
