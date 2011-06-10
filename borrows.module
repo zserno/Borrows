@@ -6,6 +6,7 @@
  */
 
 define("BORROWS_RESOURCE_CT", "bookingsapi_resource");
+define("BORROWS_PREBOOKING_DAYS", "60");
 
 
 /**
@@ -17,7 +18,23 @@ function borrows_menu() {
     'access arguments' => array('access content'), // @TODO Adjust.
     'type' => MENU_CALLBACK,
   );
+  $items['admin/settings/borrows'] = array(
+    'title'            => 'Borrows settings',
+    'description'      => 'Configure Borrows module.',
+    'access arguments' => array('administer borrows configuration'),
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('borrows_admin_form'),
+    'type'             => MENU_NORMAL_ITEM,
+    'file'             => 'borrows.admin.inc',
+  );
   return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function borrows_perm() {
+  return array('administer borrows configuration');
 }
 
 /**
@@ -30,20 +47,29 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       drupal_add_css($path . '/css/borrows.css');
       drupal_add_js($path . '/js/jquery.blockUI.js');
       drupal_add_js($path . '/js/borrows.js', 'module', 'footer');
+      dpm($calendar);
       break;
     case 'alter':
       //dpm($date);
       //dpm($calendar);
 
-      $is_weekday = !in_array($date->weekday, array('sa', 'su'));
+      //$is_weekday = !in_array($date->weekday, array('sa', 'su'));
       // Do not allow booking for today and tomorrow.
       // strtotime() needs a bit of help.
       $is_allowed = (strtotime($date->day . '-' . $date->month . '-' . $date->year) >= (strtotime('tomorrow') + (24 * 60 * 60)));
 
-      if ($is_weekday && $is_allowed) {
-        $date->content  = '<label class="option" for="' . $date->date . '">';
-        $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="form-checkbox" />';
-        $date->content .= $date->day . '</label>';
+      // @TODO Implement this using bookingsapi.
+      $is_bookable = TRUE;
+
+      if ($is_allowed) {
+        if ($is_bookable) {
+          $date->content  = '<label class="option" for="' . $date->date . '">';
+          $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="form-checkbox" />';
+          $date->content .= $date->day . '</label>';
+        }
+        else {
+          $date->content = '<span class="borrows-booked">' . $date->day . '</span>';
+        }
       }
       break;
   }
