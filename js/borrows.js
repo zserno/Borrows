@@ -22,8 +22,7 @@
           css: {width: 'auto', padding: '5px'},
         });
 
-        // @TODO Use nid.
-        var dataToSend = {'nid': '12'};
+        var dataToSend = {'nid': Drupal.settings.borrows.nid};
         borrowsAjax(dataToSend, $(this));
       }
       // We are in the booking process.
@@ -106,9 +105,22 @@ function borrowsSubmit() {
   var selectedDays = $("#calendar .week input.form-checkbox[checked]");
 
   if (borrowsValidate(selectedDays)) {
+    var data = [];
     selectedDays.each(function(value) {
-      console.log($(this).val());
+      data.push($(this).val());
     });
+    var ajaxSettings = {
+      type: "POST",
+      url: Drupal.settings.borrows.ajax_path,
+      data: {days: Drupal.toJson(data)},
+      success:function(result) {
+        borrowsAjaxSuccess(result);
+      }
+    };
+    $.ajax(ajaxSettings);
+  }
+  else {
+    // Nice error message here...
   }
 }
 
@@ -116,4 +128,9 @@ function borrowsSubmit() {
 function borrowsValidate(selectedDays) {
   console.log("Valid.");
   return true;
+}
+
+// @TODO Implement me.
+function borrowsAjaxSuccess(result) {
+  console.log(result);
 }

@@ -17,6 +17,12 @@ function borrows_menu() {
     'access arguments' => array('access content'), // @TODO Adjust.
     'type' => MENU_CALLBACK,
   );
+  $items['borrows_post'] = array(
+    'page callback' => 'borrows_post',
+    'access arguments' => array('access content'), // @TODO Adjust.
+    'type' => MENU_CALLBACK,
+  );
+
   $items['admin/settings/borrows'] = array(
     'title'            => 'Borrows settings',
     'description'      => 'Configure Borrows module.',
@@ -87,8 +93,9 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
           if ($is_weekend) {
             $class .= ' borrows-weekend';
           }
-          $date->content  = '<label class="option" for="' . $date->date . '">';
-          $date->content .= '<input type="checkbox" name="borrowdate[' . $date->date . ']" value="' . $date->date . '" id="borrowdate-' . $date->date . '" class="' . $class . '" />';
+
+          $date->content  = '<label class="option" for="' . $date_hu . '">';
+          $date->content .= '<input type="checkbox" name="borrowdate[' . $date_hu . ']" value="' . $date_hu . '" id="borrowdate-' . $date_hu. '" class="' . $class . '" />';
           $date->content .= $date->day . '</label>';
         }
         else {
@@ -119,11 +126,49 @@ function borrows_ajax($nid = NULL) {
   return drupal_json();
 }
 
+/**
+ * Handle the AJAX request.
+ */
+function borrows_post() {
+  //dd($_POST['days']);
+  // @TODO Authenticate using the AJAX token.
+  /*
+  if (!borrows_ajax_auth()) {
+    return FALSE;
+  }
+  */
+
+  // @TODO Consider using only From and To dates.
+  $days = json_decode($_POST['days'], TRUE);
+
+  // And here we go.
+  $booking = array(
+    'resource_id' => 12,
+  //  'record_id' => NULL,
+    'type' => BOOKINGSAPI_BOOKING,
+  //  'values' => array('resource_id' => 12),
+    'name' => '[token]',
+    'description' => '[token]',
+    'start' => '2011-06-16 17:00:00',
+    'end' => '2011-06-17 17:00:00',
+    'status' => BOOKINGSAPI_STATUS_FINALIZED,
+  );
+
+  //$booking_result = bookingsapi_booking_save($booking);
+
+  dd($days);
+  print "OK";
+  //drupal_goto();
+}
+
 function borrows_get_settings() {
+  $node = menu_get_object();
   $holidays = explode("\r\n", variable_get('borrows_holidays', NULL));
   $weekends = explode("\r\n", variable_get('borrows_weekends', NULL));
   return array(
     'holidays' => $holidays,
     'weekends' => $weekends,
+    'nid' => $node->nid,
+    'ajax_path' => url('borrows_post'),
   );
 }
