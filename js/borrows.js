@@ -11,20 +11,29 @@
     $("#borrows-submit").remove();
 
     $("#calendar .week input.form-checkbox", context).click(function() {
+      // We're at the beginnign of the booking process.
       if (Drupal.settings.borrows.semaphore == false) {
         Drupal.settings.borrows.semaphore = true;
 
+        // Block calendar with an overlay.
         $("#calendar", context).block({
           // @TODO Make path dynamic.
           message: '<img src="' + Drupal.settings.basePath + 'sites/all/modules/borrows/images/loader.gif" /><h2>' + Drupal.t("Checking availability...") + '</h2>',
           css: {width: 'auto', padding: '5px'},
         });
+
         // @TODO Use nid.
         var dataToSend = {'nid': '12'};
         borrowsAjax(dataToSend, $(this));
       }
+      // We are in the booking process.
       else {
+        // Unchecked a checkbox.
         if ($(this).attr('checked') == false) {
+          // Remove all checkboxes after current one.
+          var current = $("#calendar .week input.form-checkbox").index(this);
+          $("#calendar .week input.form-checkbox:gt(" + current + ")").filter(":checked").attr('checked', false);
+
           // Check if no more active checkboxes left.
           if ($("#calendar .week input.form-checkbox[checked]").length == 0) {
             // Unset semaphore.
@@ -34,6 +43,13 @@
             // Restore all available checkboxes.
             Drupal.calendar.init();
           }
+        }
+        // Checked a checkbox.
+        else {
+          // Let's see if there's any unchecked checkbox between
+          // current and the first one, then make them checked.
+          var current = $("#calendar .week input.form-checkbox").index(this);
+          $("#calendar .week input.form-checkbox:lt(" + current + ")").filter(":not(:checked)").attr('checked', true);
         }
       }
 
