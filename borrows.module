@@ -138,27 +138,35 @@ function borrows_post() {
   }
   */
 
-  // @TODO Consider using only From and To dates.
   $days = json_decode($_POST['days'], TRUE);
+  $nid = $_POST['nid'];
+  if (!is_array($days)) {
+    return _borrows_booking_response(FALSE, t('Invalid dates.'));
+  }
 
   // And here we go.
   $booking = array(
-    'resource_id' => 12,
-  //  'record_id' => NULL,
+    'resource_id' => $nid,
     'type' => BOOKINGSAPI_BOOKING,
-  //  'values' => array('resource_id' => 12),
-    'name' => '[token]',
-    'description' => '[token]',
-    'start' => '2011-06-16 17:00:00',
-    'end' => '2011-06-17 17:00:00',
+    'name' => '[name]',
+    'description' => '[description]',
+    'start' => $days['start'] . ' 00:00:00',
+    'end' => $days['end'] . ' 23:59:59',
     'status' => BOOKINGSAPI_STATUS_FINALIZED,
   );
 
-  //$booking_result = bookingsapi_booking_save($booking);
+  $booking_result = bookingsapi_booking_save($booking);
+  dd($booking);
+  dd($booking_result);
+  $success = $booking_result[0];
+  if ($booking_result[0] === FALSE) {
+    if ($booking_result[1] === FALSE) {
+      $message = t('SQL issue.');
+    }
+    $message = bookingsapi_conflict_type($booking_result[1]);
+  }
 
-  dd($days);
-  print "OK";
-  //drupal_goto();
+  return _borrows_booking_response($success, $message);
 }
 
 function borrows_get_settings() {
@@ -171,4 +179,21 @@ function borrows_get_settings() {
     'nid' => $node->nid,
     'ajax_path' => url('borrows_post'),
   );
+}
+
+/**
+ * Private function that returns a booking result in JSON.
+ * @param $success
+ *  Boolean, whether booking was successful.
+ * @param $message
+ *  String, if $success == FALSE then it holds a short error message.
+ * @return
+ *  JSON object, {success, message}.
+ */
+function _borrows_booking_response($success = TRUE, $message = NULL) {
+  $response = array(
+    'success' => $success,
+    'message' => $message,
+  );
+  return drupal_json($response);
 }

@@ -102,17 +102,16 @@ function borrowsAjax(dataToSend, $checkbox) {
 }
 
 function borrowsSubmit() {
-  var selectedDays = $("#calendar .week input.form-checkbox[checked]");
+  var start = $("#calendar .week input.form-checkbox[checked]:first").val();
+  var end = $("#calendar .week input.form-checkbox[checked]:last").val();
+  var days = {start: start, end: end};
+  var nid = Drupal.settings.borrows.nid;
 
-  if (borrowsValidate(selectedDays)) {
-    var data = [];
-    selectedDays.each(function(value) {
-      data.push($(this).val());
-    });
+  if (borrowsValidate(days)) {
     var ajaxSettings = {
       type: "POST",
       url: Drupal.settings.borrows.ajax_path,
-      data: {days: Drupal.toJson(data)},
+      data: {nid: nid, days: Drupal.toJson(days)},
       success:function(result) {
         borrowsAjaxSuccess(result);
       }
