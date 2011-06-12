@@ -17,8 +17,8 @@ function borrows_menu() {
     'access arguments' => array('access content'), // @TODO Adjust.
     'type' => MENU_CALLBACK,
   );
-  $items['borrows_post'] = array(
-    'page callback' => 'borrows_post',
+  $items['borrows_booking'] = array(
+    'page callback' => 'borrows_booking',
     'access arguments' => array('access content'), // @TODO Adjust.
     'type' => MENU_CALLBACK,
   );
@@ -53,7 +53,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       drupal_add_js($path . '/js/jquery.blockUI.js');
       drupal_add_js($path . '/js/borrows.js', 'module', 'footer');
       drupal_add_js(array('borrows' => borrows_get_settings()), 'setting', 'footer');
-      //dpm($calendar);
+      $calendar->nid = arg(1);
       break;
     case 'alter':
       //dpm($date);
@@ -61,7 +61,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
 
       $is_weekend = in_array($date->weekday, array('sa', 'su'));
 
-      // Do not allow booking for today and tomorrow.
+      // Do not allow booking for past days, today and tomorrow.
       // strtotime() needs a bit of help.
       $is_allowed = (strtotime($date->day . '-' . $date->month . '-' . $date->year) >= (strtotime('tomorrow') + (24 * 60 * 60)));
 
@@ -83,8 +83,13 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
         }
       }
 
-      // @TODO Implement this using bookingsapi.
-      $is_bookable = TRUE;
+      // Check if current day is bookable using bookingsapi.
+      $record = array(
+        'resource_id' => $calendar->nid,
+        'start' => $date_hu . ' 00:00:00',
+        'end' => $date_hu . ' 23:59:59',
+      );
+      $is_bookable = (bookingsapi_conflict_check($record) == BOOKINGSAPI_CONFLICTS_NO);
 
       if ($is_allowed) {
         if ($is_bookable) {
@@ -106,6 +111,10 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
   }
 }
 
+/**
+ * AJAX callback.
+ * @return Number of allowed days for a booking.
+ */
 function borrows_ajax($nid = NULL) {
   if ($node = node_load($nid)) {
     if ($node->type == BORROWS_RESOURCE_CT) {
@@ -129,7 +138,8 @@ function borrows_ajax($nid = NULL) {
 /**
  * Handle the AJAX request.
  */
-function borrows_post() {
+function borrows_booking() {
+  global $user;
   //dd($_POST['days']);
   // @TODO Authenticate using the AJAX token.
   /*
@@ -144,31 +154,36 @@ function borrows_post() {
     return _borrows_booking_response(FALSE, t('Invalid dates.'));
   }
 
+  $node = node_load($nid);
   // And here we go.
   $booking = array(
     'resource_id' => $nid,
     'type' => BOOKINGSAPI_BOOKING,
-    'name' => '[name]',
-    'description' => '[description]',
+    'name' => check_plain($user->name) . ', ' . check_plain($node->title) . $days['start'] . '-' . $days['end'],
+    //'description' => '',
     'start' => $days['start'] . ' 00:00:00',
     'end' => $days['end'] . ' 23:59:59',
     'status' => BOOKINGSAPI_STATUS_FINALIZED,
   );
 
   $booking_result = bookingsapi_booking_save($booking);
-  dd($booking);
-  dd($booking_result);
   $success = $booking_result[0];
+  // We've got some problem.
   if ($booking_result[0] === FALSE) {
+    // SQL issue.
     if ($booking_result[1] === FALSE) {
       $message = t('SQL issue.');
     }
+    // Conflict.
     $message = bookingsapi_conflict_type($booking_result[1]);
   }
 
   return _borrows_booking_response($success, $message);
 }
 
+/**
+ * Get couple settings for client side actions.
+ */
 function borrows_get_settings() {
   $node = menu_get_object();
   $holidays = explode("\r\n", variable_get('borrows_holidays', NULL));
@@ -177,7 +192,7 @@ function borrows_get_settings() {
     'holidays' => $holidays,
     'weekends' => $weekends,
     'nid' => $node->nid,
-    'ajax_path' => url('borrows_post'),
+    'ajax_path' => url('borrows_booking'),
   );
 }
 

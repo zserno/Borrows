@@ -7,6 +7,10 @@
     // Global semaphore to track if a booking has started.
     // E.g. there is at least one active checkbox.
     Drupal.settings.borrows.semaphore = false;
+
+    // Apply borrows status classes on days.
+    $("#calendar .week span.borrows-booked").parents('div.hok').addClass('borrows-booked');
+
     // Remove submit button, e.g. when changing month.
     $("#borrows-submit").remove();
 
@@ -54,7 +58,7 @@
 
       // Debug.
       //console.log('Sempahore: ' + Drupal.settings.borrows.semaphore);
-    });
+    }).parents('div.hok').addClass('borrows-available');
   }
 })(jQuery, Drupal)
 

@@ -15,3 +15,14 @@
   -moz-box-shadow: 5px 5px 10px -4px #888888 inset;
   -webkit-box-shadow: 5px 5px 10px -4px #888888 inset;
 }
+
+#calendar .week .hok.disabled span {
+  opacity: 1;
+}
+
+#calendar .week .hok.borrows-booked {
+  background-color: #FF6347;
+}
+#calendar .week .hok.borrows-available {
+  background-color: #90EE90;
+}
