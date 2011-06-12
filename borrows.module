@@ -63,7 +63,9 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
 
       // Do not allow booking for past days, today and tomorrow.
       // strtotime() needs a bit of help.
-      $is_allowed = (strtotime($date->day . '-' . $date->month . '-' . $date->year) >= (strtotime('tomorrow') + (24 * 60 * 60)));
+      $day = strtotime($date->day . '-' . $date->month . '-' . $date->year);
+      $prebooking = variable_get('borrows_prebooking', BORROWS_PREBOOKING_DAYS);
+      $is_allowed = ($day >= (strtotime('tomorrow') + (24 * 60 * 60)) && $day <= strtotime('today') + $prebooking * 24 * 60 * 60);
 
       // Convert to hungarian date format to make comparison easy.
       $date_hu = date('Y-m-d', strtotime($date->year . '-' . $date->month . '-' . $date->day));
