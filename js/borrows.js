@@ -116,6 +116,7 @@ function borrowsSubmit() {
       type: "POST",
       url: Drupal.settings.borrows.ajax_path,
       data: {nid: nid, days: Drupal.toJson(days)},
+      dataType: 'json',
       success:function(result) {
         borrowsAjaxSuccess(result);
       }
@@ -136,4 +137,12 @@ function borrowsValidate(selectedDays) {
 // @TODO Implement me.
 function borrowsAjaxSuccess(result) {
   console.log(result);
+  if (result.success) {
+    $("#block-calendar_block-0").append('<div class="messages status">' + Drupal.t('Booking was successful.') + '</div>');
+  }
+  else {
+    $("#block-calendar_block-0").append('<div class="messages error">' + Drupal.t('Booking failed. Reason: ') + result.message + '.</div>');
+  }
+  // Refresh calendar.
+  Drupal.calendar.init();
 }

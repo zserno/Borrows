@@ -160,7 +160,6 @@ function borrows_booking() {
     'resource_id' => $nid,
     'type' => BOOKINGSAPI_BOOKING,
     'name' => check_plain($user->name) . ', ' . check_plain($node->title) . $days['start'] . '-' . $days['end'],
-    //'description' => '',
     'start' => $days['start'] . ' 01:00:00',
     'end' => $days['end'] . ' 23:59:59',
     'status' => BOOKINGSAPI_STATUS_FINALIZED,
