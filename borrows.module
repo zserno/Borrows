@@ -86,7 +86,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       // Check if current day is bookable using bookingsapi.
       $record = array(
         'resource_id' => $calendar->nid,
-        'start' => $date_hu . ' 00:00:00',
+        'start' => $date_hu . ' 01:00:00',
         'end' => $date_hu . ' 23:59:59',
       );
       $is_bookable = (bookingsapi_conflict_check($record) == BOOKINGSAPI_CONFLICTS_NO);
@@ -161,7 +161,7 @@ function borrows_booking() {
     'type' => BOOKINGSAPI_BOOKING,
     'name' => check_plain($user->name) . ', ' . check_plain($node->title) . $days['start'] . '-' . $days['end'],
     //'description' => '',
-    'start' => $days['start'] . ' 00:00:00',
+    'start' => $days['start'] . ' 01:00:00',
     'end' => $days['end'] . ' 23:59:59',
     'status' => BOOKINGSAPI_STATUS_FINALIZED,
   );
