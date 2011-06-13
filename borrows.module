@@ -24,9 +24,9 @@ function borrows_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['borrows_review/%node'] = array(
-    'page callback' => 'borrows_review',
-    'page arguments' => array(1),
+  $items['borrows-review/%node/%/%'] = array(
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('borrows_review_form', 1, 2, 3),
     'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
@@ -147,71 +147,53 @@ function borrows_ajax($nid = NULL) {
 }
 
 /**
- * Handle the AJAX request.
+ * Handle booking request.
+ * @see borrows_review_form_submit.
  */
-function borrows_booking() {
-  global $user;
-  //dd($_POST['days']);
-  // @TODO Authenticate using the AJAX token.
-  /*
-  if (!borrows_ajax_auth()) {
-    return FALSE;
-  }
-  */
-
-  $days = json_decode($_POST['days'], TRUE);
-  $nid = $_POST['nid'];
-  if (!is_array($days)) {
-    return _borrows_booking_response(FALSE, t('Invalid dates.'));
-  }
-
-  $node = node_load($nid);
+function borrows_booking($node, $start, $end, $phone, $comment) {
   // And here we go.
   $booking = array(
-    'resource_id' => $nid,
+    'resource_id' => $node->nid,
     'type' => BOOKINGSAPI_BOOKING,
-    'name' => check_plain($user->name) . ', ' . check_plain($node->title) . $days['start'] . '-' . $days['end'],
-    'start' => $days['start'] . ' 01:00:00',
-    'end' => $days['end'] . ' 23:59:59',
+    'name' => check_plain($phone),
+    'description' => check_plain($comment),
+    'start' => $start . ' 02:00:00', // Prevent timezone issues.
+    'end' => $end . ' 23:59:59',
     'status' => BOOKINGSAPI_STATUS_FINALIZED,
   );
 
   $booking_result = bookingsapi_booking_save($booking);
   $success = $booking_result[0];
+
   // We've got some problem.
+  $message = '';
   if ($booking_result[0] === FALSE) {
     // SQL issue.
     if ($booking_result[1] === FALSE) {
       $message = t('SQL issue.');
     }
     // Conflict.
-    $message = bookingsapi_conflict_type($booking_result[1]);
+    //$message = bookingsapi_conflict_type($booking_result[1]);
+    $message = t('conflicting dates');
   }
 
-  return _borrows_booking_response($success, $message);
-}
-
-/**
- * Booking review page.
- */
-function borrows_review($node) {
-  //dpm($node);
-
-  return drupal_get_form('borrows_review_form', $node);
+  return array('success' => $success, 'message' => $message);
 }
 
 /**
  * Booking review form.
  */
-function borrows_review_form($form_state, $node) {
+function borrows_review_form($form_state, $node, $start, $end) {
   $form['borrows_details'] = array(
-    '#value' => theme('borrows_details', $node),
+    '#value' => theme('borrows_details', $node) . $start . '|' . $end,
   );
 
   $form['borrows_phone'] = array(
     '#type' => 'textfield',
     '#title' => t('Phone number'),
     '#description' => t('Enter your phone number(s) so we can contact you in case of any issues regarding your booking.'),
+    '#size' => 64,
+    '#maxlength' => 64,
   );
 
   $form['borrows_comment'] = array(
@@ -222,8 +204,7 @@ function borrows_review_form($form_state, $node) {
 
   $form['borrows_terms'] = array(
     '#type' => 'checkbox',
-    // @TODO add target='_blank'.
-    '#title' => t('I accept !terms.', array('!terms' => l(t('terms and conditions'), 'node'))),
+    '#title' => t('I accept !terms.', array('!terms' => l(t('terms and conditions'), 'node', array('attributes' => array('target' => '_blank'))))),
     '#required' => TRUE,
   );
 
@@ -232,9 +213,55 @@ function borrows_review_form($form_state, $node) {
     '#value' => t('Submit booking'),
   );
 
+  $form['node'] = array(
+    '#type' => 'value',
+    '#value' => $node,
+  );
+
+  $form['start'] = array(
+    '#type' => 'value',
+    '#value' => check_plain($start),
+  );
+
+  $form['end'] = array(
+    '#type' => 'value',
+    '#value' => check_plain($end),
+  );
+
   return $form;
 }
 
+// @TODO implement me.
+// @TODO validate dates and nid.
+/**
+ * Validate callback.
+ * @see borrows_review_form.
+ */
+function borrows_review_form_validate($form, &$form_state) {
+  return TRUE;
+}
+
+/**
+ * Submit callback.
+ * @see borrows_review_form.
+ */
+function borrows_review_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  list($node, $start, $end, $phone, $comment) = array($values['node'], $values['start'], $values['end'], $values['borrows_phone'], $values['borrows_comment']);
+  // Record booking.
+  $result = borrows_booking($node, $start, $end, $phone, $comment);
+  // Show if booking was successful.
+  if ($result['success'] === TRUE) {
+    drupal_set_message(t('Booking was successful.'));
+  }
+  else {
+    drupal_set_message(t('Booking failed. Reason: @reason.', array('@reason' => $result['message'])));
+  }
+}
+
+/**
+ * Implementation of hook_theme().
+ */
 function borrows_theme() {
   return array(
     'borrows_details' => array(
@@ -243,11 +270,15 @@ function borrows_theme() {
   );
 }
 
+/**
+ * Render booking details on the review page.
+ * @see borrows_review_form.
+ */
 function theme_borrows_details($node) {
   return check_plain($node->title);
 }
 
-/****/
+/************************************/
 
 /**
  * Get couple settings for client side actions.
