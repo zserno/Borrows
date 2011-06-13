@@ -14,24 +14,33 @@ define("BORROWS_PREBOOKING_DAYS", "60");
 function borrows_menu() {
   $items['borrows_ajax'] = array(
     'page callback' => 'borrows_ajax',
-    'access arguments' => array('access content'), // @TODO Adjust.
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
+
   $items['borrows_booking'] = array(
     'page callback' => 'borrows_booking',
-    'access arguments' => array('access content'), // @TODO Adjust.
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['borrows_review/%node'] = array(
+    'page callback' => 'borrows_review',
+    'page arguments' => array(1),
+    'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
 
   $items['admin/settings/borrows'] = array(
     'title'            => 'Borrows settings',
     'description'      => 'Configure Borrows module.',
-    'access arguments' => array('administer borrows configuration'),
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('borrows_admin_form'),
+    'access arguments' => array('administer borrows configuration'),
     'type'             => MENU_NORMAL_ITEM,
     'file'             => 'borrows.admin.inc',
   );
+
   return $items;
 }
 
@@ -181,6 +190,64 @@ function borrows_booking() {
 
   return _borrows_booking_response($success, $message);
 }
+
+/**
+ * Booking review page.
+ */
+function borrows_review($node) {
+  //dpm($node);
+
+  return drupal_get_form('borrows_review_form', $node);
+}
+
+/**
+ * Booking review form.
+ */
+function borrows_review_form($form_state, $node) {
+  $form['borrows_details'] = array(
+    '#value' => theme('borrows_details', $node),
+  );
+
+  $form['borrows_phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone number'),
+    '#description' => t('Enter your phone number(s) so we can contact you in case of any issues regarding your booking.'),
+  );
+
+  $form['borrows_comment'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Comments'),
+    '#description' => t('You can enter your comments here.'),
+  );
+
+  $form['borrows_terms'] = array(
+    '#type' => 'checkbox',
+    // @TODO add target='_blank'.
+    '#title' => t('I accept !terms.', array('!terms' => l(t('terms and conditions'), 'node'))),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit booking'),
+  );
+
+  return $form;
+}
+
+function borrows_theme() {
+  return array(
+    'borrows_details' => array(
+      'arguments' => array('node' => null),
+    ),
+  );
+}
+
+function theme_borrows_details($node) {
+  return check_plain($node->title);
+}
+
+/****/
 
 /**
  * Get couple settings for client side actions.
