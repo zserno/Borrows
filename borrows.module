@@ -145,7 +145,7 @@ function borrows_form_alter(&$form, &$form_state, $form_id) {
  * Implementation of hook_nodeapi().
  */
 function borrows_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  if ($op == 'view') {
+  if ($op == 'view' && $node->type == BORROWS_RESOURCE_CT) {
     // Render calendar block.
     $module = 'calendar_block';
     $delta = 0;
@@ -229,9 +229,13 @@ function borrows_booking($node, $start, $end, $phone, $comment) {
 
 
 function borrows_review_page() {
+  if (empty($_POST)) {
+    return drupal_access_denied();
+  }
   $node = node_load($_POST['borrows_nid']);
   $start = $_POST['borrows_start'];
   $end = $_POST['borrows_end'];
+
 
   // @TODO Get rid of this quick & dirty.
   drupal_set_title('Foglalás véglegesítése');
