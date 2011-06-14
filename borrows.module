@@ -57,6 +57,17 @@ function borrows_perm() {
 function borrows_calendar_block(&$calendar, &$date, $op) {
   switch($op) {
     case 'load':
+
+      // @TODO Translate them properly.
+      $calendar->weekdays = array(
+        'mo' => 'H',
+        'tu' => 'K',
+        'we' => 'SZ',
+        'th' => 'CS',
+        'fr' => 'P',
+        'sa' => 'SZ',
+        'su' => 'V',
+      );
       $path = drupal_get_path('module', 'borrows');
       drupal_add_css($path . '/css/borrows.css');
       drupal_add_js($path . '/js/jquery.blockUI.js');
