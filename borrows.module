@@ -208,7 +208,7 @@ function borrows_review_form($form_state, $node, $start, $end) {
 
   $form['borrows_comment'] = array(
     '#type' => 'textarea',
-    '#title' => t('Comments'),
+    '#title' => t('Questions, comments'),
     '#description' => t('You can enter your comments here.'),
   );
 

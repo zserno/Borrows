@@ -100,7 +100,7 @@ function borrowsAjax(dataToSend, $checkbox) {
 
     // Add submit button.
     var submit = '<form id="borrows-form" method="POST" action="' + Drupal.settings.basePath + 'borrows-review">';
-    submit += '<input type="submit" id="borrows-submit" value="' + Drupal.t('Submit') + '" />';
+    submit += '<input type="submit" id="borrows-submit" value="' + Drupal.t('Save booking') + '" />';
     submit += '<input type="hidden" name="borrows_nid" value="0" />';
     submit += '<input type="hidden" name="borrows_start" value="0" />';
     submit += '<input type="hidden" name="borrows_end" value="0" />';
