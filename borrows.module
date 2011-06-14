@@ -205,6 +205,8 @@ function borrows_review_page() {
   $start = $_POST['borrows_start'];
   $end = $_POST['borrows_end'];
 
+  drupal_set_title(t('Review your booking'));
+
   return drupal_get_form('borrows_review_form', $node, $start, $end);
 }
 
