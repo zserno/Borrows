@@ -204,6 +204,16 @@ function borrows_review_page() {
  * Booking review form.
  */
 function borrows_review_form($form_state, $node, $start, $end) {
+  // Check if $form is submitted, and if so,
+  // restore POSTed data from calendar.
+  // This way validation error won't loose booking parameters.
+  if (isset($form_state['post']['op'])) {
+    $post = $form_state['post'];
+    $node = node_load($post['nid']);
+    $start = $post['start'];
+    $end = $post['end'];
+  }
+
   $form['borrows_details'] = array(
     '#value' => theme('borrows_details', $node),
     //'#value' => theme('borrows_details', $node) . $start . '|' . $end,
@@ -263,10 +273,9 @@ function borrows_review_form($form_state, $node, $start, $end) {
 function borrows_review_form_validate($form, &$form_state) {
   // Help FAPI to handle required checkbox.
   // See: http://drupal.org/node/259292.
-  if ($form_state['values']['terms'] !== 1) {
+  if ($form_state['values']['borrows_terms'] != 1) {
     form_set_error('borrows_terms', t('You have to accept terms and conditions.'));
   }
-  //dpm($form_state['values']['borrows_terms']);
   return TRUE;
 }
 
