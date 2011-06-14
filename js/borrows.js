@@ -99,39 +99,44 @@ function borrowsAjax(dataToSend, $checkbox) {
     $("#calendar").unblock();
 
     // Add submit button.
-    $('<input type="submit" id="borrows-submit" value="' + Drupal.t('Submit') + '" />').appendTo($("#block-calendar_block-0")).click(function() {
-      borrowsSubmit();
+    var submit = '<form id="borrows-form" method="POST" action="' + Drupal.settings.basePath + 'borrows-review">';
+    submit += '<input type="submit" id="borrows-submit" value="' + Drupal.t('Submit') + '" />';
+    submit += '<input type="hidden" name="borrows_nid" value="0" />';
+    submit += '<input type="hidden" name="borrows_start" value="0" />';
+    submit += '<input type="hidden" name="borrows_end" value="0" />';
+    submit += '</form>';
+
+    $(submit).appendTo($("#block-calendar_block-0"));
+
+    $("#borrows-form").submit(function() {
+      return borrowsSubmit();
     });
   });
 }
 
+// @TODO Implement me.
+function borrowsValidate(start, end) {
+  console.log("Valid.");
+  return true;
+}
+
+// Submit callback.
 function borrowsSubmit() {
   var start = $("#calendar .week input.form-checkbox[checked]:first").val();
   var end = $("#calendar .week input.form-checkbox[checked]:last").val();
-  var days = {start: start, end: end};
   var nid = Drupal.settings.borrows.nid;
 
-  if (borrowsValidate(days)) {
-    var ajaxSettings = {
-      type: "POST",
-      url: Drupal.settings.borrows.ajax_path,
-      data: {nid: nid, days: Drupal.toJson(days)},
-      dataType: 'json',
-      success:function(result) {
-        borrowsAjaxSuccess(result);
-      }
-    };
-    $.ajax(ajaxSettings);
+  if (borrowsValidate(start, end)) {
+    $("#borrows-form input[name=borrows_nid]").val(Drupal.settings.borrows.nid);
+    $("#borrows-form input[name=borrows_start]").val(start);
+    $("#borrows-form input[name=borrows_end]").val(end);
+
+    return true;
   }
   else {
     // Nice error message here...
+    return false;
   }
-}
-
-// @TODO Implement me.
-function borrowsValidate(selectedDays) {
-  console.log("Valid.");
-  return true;
 }
 
 // @TODO Implement me.

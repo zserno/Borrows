@@ -24,9 +24,9 @@ function borrows_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['borrows-review/%node/%/%'] = array(
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('borrows_review_form', 1, 2, 3),
+  $items['borrows-review'] = array(
+    'page callback' => 'borrows_review_page',
+    //'page arguments' => array('borrows_review_form'),
     'access callback' => 'user_is_logged_in',
     'type' => MENU_CALLBACK,
   );
@@ -180,6 +180,15 @@ function borrows_booking($node, $start, $end, $phone, $comment) {
   return array('success' => $success, 'message' => $message);
 }
 
+
+function borrows_review_page() {
+  $node = node_load($_POST['borrows_nid']);
+  $start = $_POST['borrows_start'];
+  $end = $_POST['borrows_end'];
+
+  return drupal_get_form('borrows_review_form', $node, $start, $end);
+}
+
 /**
  * Booking review form.
  */
@@ -194,6 +203,7 @@ function borrows_review_form($form_state, $node, $start, $end) {
     '#description' => t('Enter your phone number(s) so we can contact you in case of any issues regarding your booking.'),
     '#size' => 64,
     '#maxlength' => 64,
+    '#required' => TRUE,
   );
 
   $form['borrows_comment'] = array(
@@ -213,18 +223,18 @@ function borrows_review_form($form_state, $node, $start, $end) {
     '#value' => t('Submit booking'),
   );
 
-  $form['node'] = array(
-    '#type' => 'value',
-    '#value' => $node,
+  $form['nid'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->nid,
   );
 
   $form['start'] = array(
-    '#type' => 'value',
+    '#type' => 'hidden',
     '#value' => check_plain($start),
   );
 
   $form['end'] = array(
-    '#type' => 'value',
+    '#type' => 'hidden',
     '#value' => check_plain($end),
   );
 
@@ -247,9 +257,14 @@ function borrows_review_form_validate($form, &$form_state) {
  */
 function borrows_review_form_submit($form, &$form_state) {
   $values = $form_state['values'];
-  list($node, $start, $end, $phone, $comment) = array($values['node'], $values['start'], $values['end'], $values['borrows_phone'], $values['borrows_comment']);
+  // @OTOD Find out why $values does not hold POSTed values from calendar.
+  $post = $form_state['clicked_button']['#post'];
+  list($node, $start, $end) = array(node_load($post['nid']), $post['start'], $post['end']);
+  list($phone, $comment) = array($values['borrows_phone'], $values['borrows_comment']);
+
   // Record booking.
   $result = borrows_booking($node, $start, $end, $phone, $comment);
+
   // Show if booking was successful.
   if ($result['success'] === TRUE) {
     drupal_set_message(t('Booking was successful.'));
@@ -257,6 +272,8 @@ function borrows_review_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t('Booking failed. Reason: @reason.', array('@reason' => $result['message'])));
   }
+
+  $form_state['redirect'] = 'node/' . $node->nid;
 }
 
 /**
