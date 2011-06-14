@@ -194,7 +194,8 @@ function borrows_review_page() {
  */
 function borrows_review_form($form_state, $node, $start, $end) {
   $form['borrows_details'] = array(
-    '#value' => theme('borrows_details', $node) . $start . '|' . $end,
+    '#value' => theme('borrows_details', $node),
+    //'#value' => theme('borrows_details', $node) . $start . '|' . $end,
   );
 
   $form['borrows_phone'] = array(
@@ -203,7 +204,6 @@ function borrows_review_form($form_state, $node, $start, $end) {
     '#description' => t('Enter your phone number(s) so we can contact you in case of any issues regarding your booking.'),
     '#size' => 64,
     '#maxlength' => 64,
-    '#required' => TRUE,
   );
 
   $form['borrows_comment'] = array(
@@ -292,7 +292,17 @@ function borrows_theme() {
  * @see borrows_review_form.
  */
 function theme_borrows_details($node) {
-  return check_plain($node->title);
+  $location = content_format('field_borrow_location', $node->field_borrow_location[0]);
+  $takeaway = content_format('field_takeaway_time', $node->field_takeaway_time[0]);
+  $bringback = content_format('field_bringback_time', $node->field_bringback_time[0]);
+
+  $info = array(
+    t('Location of the product: !location.', array('!location' => $location)),
+    t('The product can be picked up at !time.', array('!time' => $takeaway)),
+    t('The product must be brought back at !time.', array('!time' => $bringback)),
+  );
+
+  return theme('item_list', $info);
 }
 
 /************************************/
