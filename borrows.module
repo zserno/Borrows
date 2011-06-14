@@ -134,6 +134,17 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
 }
 
 /**
+ * Implementation of hook_form_alter().
+ */
+function borrows_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'bookingsapi_resource_node_form') {
+    $form['field_ba_location']['#access'] = FALSE;
+    $form['field_ba_parent']['#access'] = FALSE;
+    $form['field_ba_defaultavailability']['#access'] = FALSE;
+  }
+}
+
+/**
  * AJAX callback.
  * @return Number of allowed days for a booking.
  */
