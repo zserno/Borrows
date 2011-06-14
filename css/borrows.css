@@ -26,3 +26,8 @@
 #calendar .week .hok.borrows-available {
   background-color: #90EE90;
 }
+
+#block-calendar_block-0 {
+ float: left;
+ margin-right: 20px;
+}

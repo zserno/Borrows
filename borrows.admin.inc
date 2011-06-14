@@ -36,6 +36,13 @@ function borrows_admin_form(&$form_state) {
     '#rows' => 8,
   );
 
+  $form['borrows_instructions'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Booking instructions'),
+    '#description' => t('This text will appear next to the calendar.'),
+    '#default_value' => variable_get('borrows_instructions', ''),
+  );
+
   $form['borrows_admin_mail'] = array(
     '#type' => 'textfield',
     '#title' => t('Admin e-mail addresses'),

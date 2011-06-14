@@ -142,6 +142,34 @@ function borrows_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implementation of hook_nodeapi().
+ */
+function borrows_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($op == 'view') {
+    // Render calendar block.
+    $module = 'calendar_block';
+    $delta = 0;
+    $block = module_invoke($module, 'block', 'view', $delta);
+    // Must be converted to an object.
+    $block = !empty($block) ? (object)$block : new stdclass;
+    $block->module = $module;
+    $block->delta = $delta;
+    $block_rendered = theme('block', $block);
+
+    $node->content['borrows_calendar'] = array(
+      '#value' => $block_rendered,
+      '#weight' => 100,
+    );
+
+    // Add instructions.
+    $node->content['borrows_instructions'] = array(
+      '#value' => '<div id="borrows-instructions">' . check_markup(variable_get('borrows_instructions', '')) . '</div>',
+      '#weight' => 101,
+    );
+  }
+}
+
+/**
  * AJAX callback.
  * @return Number of allowed days for a booking.
  */
@@ -205,7 +233,9 @@ function borrows_review_page() {
   $start = $_POST['borrows_start'];
   $end = $_POST['borrows_end'];
 
-  drupal_set_title(t('Review your booking'));
+  // @TODO Get rid of this quick & dirty.
+  drupal_set_title('Foglalás véglegesítése');
+  //drupal_set_title(t('Review your booking'));
 
   return drupal_get_form('borrows_review_form', $node, $start, $end);
 }
