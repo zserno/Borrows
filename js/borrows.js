@@ -12,16 +12,16 @@
     $("#calendar .week span.borrows-booked").parents('div.hok').addClass('borrows-booked');
 
     // Remove submit button, e.g. when changing month.
-    $("#borrows-submit").remove();
+    $("#borrows-form").remove();
 
-    $("#calendar .week input.form-checkbox", context).click(function() {
+    $("#calendar .week input.form-checkbox").click(function() {
       // We're at the beginnign of the booking process.
+      // No checkboxes are checked at this point.
       if (Drupal.settings.borrows.semaphore == false) {
         Drupal.settings.borrows.semaphore = true;
 
         // Block calendar with an overlay.
-        $("#calendar", context).block({
-          // @TODO Make path dynamic.
+        $("#calendar").block({
           message: '<img src="' + Drupal.settings.basePath + 'sites/all/modules/borrows/images/loader.gif" /><h2>' + Drupal.t("Checking availability...") + '</h2>',
           css: {width: 'auto', padding: '5px'},
         });
@@ -42,8 +42,9 @@
             // Unset semaphore.
             Drupal.settings.borrows.semaphore = false;
             // Remove submit button.
-            $("#borrows-submit").remove();
+            $("#borrows-form").remove();
             // Restore all available checkboxes.
+            Drupal.calendar = new calendar();
             Drupal.calendar.init();
           }
         }
@@ -64,6 +65,7 @@
 
 function borrowsAjax(dataToSend, $checkbox) {
   $.getJSON(Drupal.settings.basePath + 'borrows_ajax/' + dataToSend.nid, function(data) {
+
     // We keep the next (allowed_days - 1) number of checkboxes,
     // since current one is already checked.
     var i = data.allowed_days - 1;
@@ -106,11 +108,9 @@ function borrowsAjax(dataToSend, $checkbox) {
     submit += '<input type="hidden" name="borrows_end" value="0" />';
     submit += '</form>';
 
-    $(submit).appendTo($("#block-calendar_block-0"));
-
-    $("#borrows-form").submit(function() {
-      return borrowsSubmit();
-    });
+    $("#block-calendar_block-0").append($(submit).submit(function() {
+      borrowsSubmit();
+    }));
   });
 }
 
@@ -137,17 +137,4 @@ function borrowsSubmit() {
     // Nice error message here...
     return false;
   }
-}
-
-// @TODO Implement me.
-function borrowsAjaxSuccess(result) {
-  console.log(result);
-  if (result.success) {
-    $("#block-calendar_block-0").append('<div class="messages status">' + Drupal.t('Booking was successful.') + '</div>');
-  }
-  else {
-    $("#block-calendar_block-0").append('<div class="messages error">' + Drupal.t('Booking failed. Reason: ') + result.message + '.</div>');
-  }
-  // Refresh calendar.
-  Drupal.calendar.init();
 }
