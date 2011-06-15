@@ -198,7 +198,7 @@ function borrows_ajax($nid = NULL) {
  * Handle booking request.
  * @see borrows_review_form_submit.
  */
-function borrows_booking($node, $start, $end, $phone, $comment) {
+function borrows_booking($node, $start, $end, $phone, $comment = '') {
   // And here we go.
   $booking = array(
     'resource_id' => $node->nid,
@@ -336,10 +336,12 @@ function borrows_review_form_submit($form, &$form_state) {
   list($phone, $comment) = array($values['borrows_phone'], $values['borrows_comment']);
 
   // Record booking.
-  $result = borrows_booking($node, $start, $end, $phone, $comment);
+  $result = borrows_booking($node, $start, $end, $phone, $comment = '');
 
-  // Show if booking was successful.
+  // If booking was successful show a message
+  // and send notification emails.
   if ($result['success'] === TRUE) {
+    borrows_send_notifications($node, $start, $end, $phone, $comment = '');
     drupal_set_message(t('Booking was successful.'));
   }
   else {
@@ -372,6 +374,51 @@ function theme_borrows_details($node) {
   );
 
   return theme('item_list', $info);
+}
+
+function borrows_send_notifications($node, $start, $end, $phone, $comment = '') {
+  global $user;
+  $params['account'] = user_load($user->uid);
+  $params['node'] = $node;
+  $params['start'] = $start;
+  $params['end'] = $end;
+  $params['phone'] = $phone;
+  drupal_mail('borrows', 'new user', $user->mail, user_preferred_language($user), $params);
+  drupal_mail('borrows', 'new admin', variable_get('borrows_admin_mail', variable_get('site_mail', ini_get('sendmail_from'))), user_preferred_language($user), $params);
+}
+
+function borrows_mail($key, &$message, $params) {
+  $language = $message['language'];
+  $variables = borrows_mail_tokens($params);
+  switch($key) {
+    case 'new user':
+      // @TODO Use proper multilingual way, like this:
+      //$message['subject'] = t('Notification from !site to !username', $variables, $language->language);
+      //$message['body'][] = t("Dear !username\n\nThere is new content available on the site.", $variables, $language->language);
+      $message['subject'] = "Foglalás visszaigazolás";
+      $message['body'][] = strtr(variable_get('borrows_user_booking_template', ''), $variables);
+      break;
+    case 'new admin':
+      $message['subject'] = "Foglalás érkezett egy termékre";
+      $message['body'][] = strtr(variable_get('borrows_admin_booking_template', ''), $variables);
+      break;
+  }
+}
+
+function borrows_mail_tokens($params) {
+  $location_node_url = node_load($params['node']->field_borrow_location[0]['nid']);
+  $tokens = array(
+    '!username' => check_plain($account->name),
+    '!site' => variable_get('site_name', 'Drupal'),
+    '!profile_realname' => check_plain($params['account']->profile_realname),
+    '!start' => check_plain($params['start']),
+    '!end' => check_plain($params['end']),
+    '!node_title' => check_plain($params['node']->title),
+    '!location_node_url' => l(check_plain($location_node_url->title), 'node/' . $location_node_url->nid, array('absolute' => TRUE)),
+    '!phone' => check_plain($params['phone']),
+  );
+
+  return $tokens;
 }
 
 /************************************/
