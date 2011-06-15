@@ -298,7 +298,8 @@ function borrows_review_form($form_state, $node, $start, $end) {
   $form['borrows_terms'] = array(
     '#type' => 'checkbox',
     // Core bug: http://drupal.org/node/259292.
-    '#title' => t('I accept !terms.', array('!terms' => l(t('terms and conditions'), 'node', array('attributes' => array('target' => '_blank'))))) . '<span class="form-required" title="This field is required.">*</span>',
+    //'#title' => t('I accept !terms.', array('!terms' => l(t('terms and conditions'), 'node', array('attributes' => array('target' => '_blank'))))) . '<span class="form-required" title="This field is required.">*</span>',
+    '#title' => t('I accept !terms.', array('!terms' => t('terms and conditions'))),
     '#required' => TRUE,
   );
 
