@@ -414,7 +414,7 @@ function borrows_mail_tokens($params) {
     '!start' => check_plain($params['start']),
     '!end' => check_plain($params['end']),
     '!node_title' => check_plain($params['node']->title),
-    '!location_node_url' => l(check_plain($location_node_url->title), 'node/' . $location_node_url->nid, array('absolute' => TRUE)),
+    '!location_node_url' => url('node/' . $location_node_url->nid, array('absolute' => TRUE)),
     '!phone' => check_plain($params['phone']),
   );
 
