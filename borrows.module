@@ -153,6 +153,8 @@ function borrows_form_alter(&$form, &$form_state, $form_id) {
  * Implementation of hook_nodeapi().
  */
 function borrows_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  global $user;
+
   if ($op == 'view' && $node->type == BORROWS_RESOURCE_CT && $a3 == FALSE) {
     // Render calendar block.
     $module = 'calendar_block';
@@ -299,7 +301,7 @@ function borrows_review_form($form_state, $node, $start, $end) {
     '#type' => 'checkbox',
     // Core bug: http://drupal.org/node/259292.
     //'#title' => t('I accept !terms.', array('!terms' => l(t('terms and conditions'), 'node', array('attributes' => array('target' => '_blank'))))) . '<span class="form-required" title="This field is required.">*</span>',
-    '#title' => t('I accept !terms.', array('!terms' => t('terms and conditions'))),
+    '#title' => t('I accept !terms.', array('!terms' => t('terms and conditions'))) . '<span class="form-required" title="This field is required.">*</span>',
     '#required' => TRUE,
   );
 
