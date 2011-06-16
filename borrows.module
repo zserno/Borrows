@@ -378,6 +378,9 @@ function borrows_theme() {
     'borrows_details' => array(
       'arguments' => array('node' => null),
     ),
+    'borrows_token_help' => array(
+      'arguments' => array(),
+    ),
   );
 }
 
@@ -393,6 +396,24 @@ function theme_borrows_details($node) {
   );
 
   return theme('item_list', $info);
+}
+
+/**
+ * Render token help with available tokens.
+ */
+function theme_borrows_token_help() {
+  $help = array(
+    '!username',
+    '!site',
+    '!profile_realname',
+    '!start',
+    '!end',
+    '!node_title',
+    '!location_node_url',
+    '!phone',
+  );
+  $output = '<p>' . t('Available variables: <br />!tokens', array('!tokens' => theme('item_list', $help))) . '</p>';
+  return $output;
 }
 
 function borrows_send_notifications($node, $start, $end, $phone, $comment = '') {

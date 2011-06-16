@@ -59,28 +59,24 @@ function borrows_admin_form(&$form_state) {
   $form['borrows_mail_templates']['borrows_user_booking_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for user'),
-    '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_user_booking_template', ''),
     '#rows' => 12,
   );
   $form['borrows_mail_templates']['borrows_user_cancellation_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for cancellation as sent to user'),
-    '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_user_cancellation_template', ''),
     '#rows' => 12,
   );
   $form['borrows_mail_templates']['borrows_admin_booking_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for admin'),
-    '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_admin_booking_template', ''),
     '#rows' => 12,
   );
   $form['borrows_mail_templates']['borrows_admin_cancellation_template'] = array(
     '#type' => 'textarea',
     '#title' => t('E-mail template for cancellation as sent to admin'),
-    '#description' => t('Description...'),
     '#default_value' => variable_get('borrows_admin_cancellation_template', ''),
     '#rows' => 12,
   );
@@ -93,7 +89,7 @@ function borrows_admin_form(&$form_state) {
     '#collapsed' => TRUE,
   );
   $form['borrows_mail_templates']['help']['borrows_token_help'] = array(
-    '#value' => theme('token_help', 'all'),
+    '#value' => theme('borrows_token_help'),
   );
 
   return system_settings_form($form);
