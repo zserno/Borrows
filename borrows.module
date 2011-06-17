@@ -267,6 +267,9 @@ function borrows_review_page() {
  * Booking review form.
  */
 function borrows_review_form($form_state, $node, $start, $end) {
+  global $user;
+  $account = user_load($user->uid);
+
   // Check if $form is submitted, and if so,
   // restore POSTed data from calendar.
   // This way validation error won't loose booking parameters.
@@ -289,6 +292,7 @@ function borrows_review_form($form_state, $node, $start, $end) {
     '#size' => 64,
     '#maxlength' => 64,
     '#required' => TRUE,
+    '#default_value' => check_plain($account->profile_phone),
   );
 
   $form['borrows_comment'] = array(
@@ -427,6 +431,9 @@ function borrows_send_notifications($node, $start, $end, $phone, $comment = '') 
   drupal_mail('borrows', 'new admin', variable_get('borrows_admin_mail', variable_get('site_mail', ini_get('sendmail_from'))), user_preferred_language($user), $params);
 }
 
+/**
+ * Implementation of hook_mail().
+ */
 function borrows_mail($key, &$message, $params) {
   $language = $message['language'];
   $variables = borrows_mail_tokens($params);
@@ -461,7 +468,7 @@ function borrows_mail_tokens($params) {
   return $tokens;
 }
 
-/************************************/
+/********** Private functions **********/
 
 /**
  * Get couple settings for client side actions.
@@ -478,19 +485,52 @@ function borrows_get_settings() {
   );
 }
 
+/********** Views integration  **********/
 /**
- * Private function that returns a booking result in JSON.
- * @param $success
- *  Boolean, whether booking was successful.
- * @param $message
- *  String, if $success == FALSE then it holds a short error message.
- * @return
- *  JSON object, {success, message}.
+ * Implementation of hook_views_api().
  */
-function _borrows_booking_response($success = TRUE, $message = NULL) {
-  $response = array(
-    'success' => $success,
-    'message' => $message,
+function borrows_views_api() {
+  return array(
+    'api' => '2.0',
   );
-  return drupal_json($response);
 }
+
+/**
+ * Implementation of hook_views_handlers().
+ */
+/*
+function publicbookings_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'publicbookings') .'/handlers',
+    ),
+    'handlers' => array(
+      'views_handler_field_publicbookings_record_link' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_publicbookings_resource_link' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_publicbookings_booking_link_edit' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_publicbookings_availability_link_edit' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_publicbookings_resource_link_edit' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+      'views_handler_field_publicbookings_title' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
+    ),
+  );
+
+}
+*/
