@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function borrows_install() {
+
+  // Create tables.
+  drupal_install_schema('borrows');
+
+  // Make sure this module loads after bookings API.
+  db_query("UPDATE {system} SET weight = 2 WHERE name = 'borrows'");
+
+  menu_rebuild();
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function borrows_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('borrows');
+  // Remove variables.
+  db_query("DELETE FROM {variable} WHERE name LIKE 'borrows_%%'");
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function borrows_schema() {
+  $schema['borrows_clients'] = array(
+  'description' => t('Stores clients. One per booking request.'),
+    'fields' => array(
+      'client_id' => array(
+        'type' => 'serial',
+      ),
+      'record_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('Primary booking record of this client.'),
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => t('User ID, if the client is a logged-in user.'),
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'length' => 20,
+        'description' => t('Phone number for contacting.'),
+      ),
+      'comments' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('client_id'),
+		'index' => array(
+			'record' => array('record_id'),
+			'uid'   => array('uid'),
+		),
+  );
+
+  return $schema;
+}
