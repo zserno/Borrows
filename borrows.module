@@ -189,6 +189,18 @@ function borrows_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 }
 
 /**
+ * Implementation of hook_bookingsapi_booking_postsave().
+ * Save additional client info to borrows_client table.
+ */
+function borrows_bookingsapi_booking_postsave($op, $record) {
+  switch ($op) {
+    case 'insert':
+      drupal_write_record('borrows_clients', $record);
+      break;
+  }
+}
+
+/**
  * AJAX callback.
  * @return Number of allowed days for a booking.
  */
@@ -217,15 +229,21 @@ function borrows_ajax($nid = NULL) {
  * @see borrows_review_form_submit.
  */
 function borrows_booking($node, $start, $end, $phone, $comment = '') {
+  global $user;
   // And here we go.
   $booking = array(
     'resource_id' => $node->nid,
     'type' => BOOKINGSAPI_BOOKING,
-    'name' => check_plain($phone),
-    'description' => check_plain($comment),
+    'name' => $node->nid,
     'start' => $start . ' 02:00:00', // Prevent timezone issues.
     'end' => $end . ' 23:59:59',
     'status' => BOOKINGSAPI_STATUS_FINALIZED,
+
+    // Informations for borrows_clients table.
+    // @see borrows_bookingsapi_booking_postsave().
+    'phone' => check_plain($phone),
+    'comments' =>  check_plain($comment),
+    'uid' => $user->uid,
   );
 
   $booking_result = bookingsapi_booking_save($booking);
@@ -359,7 +377,7 @@ function borrows_review_form_submit($form, &$form_state) {
   list($phone, $comment) = array($values['borrows_phone'], $values['borrows_comment']);
 
   // Record booking.
-  $result = borrows_booking($node, $start, $end, $phone, $comment = '');
+  $result = borrows_booking($node, $start, $end, $phone, $comment);
 
   // If booking was successful show a message
   // and send notification emails.
@@ -492,45 +510,45 @@ function borrows_get_settings() {
 function borrows_views_api() {
   return array(
     'api' => '2.0',
+    'path' => drupal_get_path('module', 'borrows') . '/includes/views',
   );
 }
 
 /**
  * Implementation of hook_views_handlers().
  */
-/*
-function publicbookings_views_handlers() {
+function borrows_views_handlers() {
   return array(
     'info' => array(
-      'path' => drupal_get_path('module', 'publicbookings') .'/handlers',
+      'path' => drupal_get_path('module', 'borrows') .'/views/handlers',
     ),
     'handlers' => array(
-      'views_handler_field_publicbookings_record_link' => array(
+      'views_handler_field_borrows_record_link' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
-      'views_handler_field_publicbookings_resource_link' => array(
+      'views_handler_field_borrows_resource_link' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
-      'views_handler_field_publicbookings_booking_link_edit' => array(
+      'views_handler_field_borrows_booking_link_edit' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
-      'views_handler_field_publicbookings_availability_link_edit' => array(
+      'views_handler_field_borrows_availability_link_edit' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
-      'views_handler_field_publicbookings_resource_link_edit' => array(
+      'views_handler_field_borrows_resource_link_edit' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
-      'views_handler_field_publicbookings_title' => array(
+      'views_handler_field_borrows_title' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
     ),
   );
-
 }
-*/
+
+
