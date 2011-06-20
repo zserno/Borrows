@@ -181,7 +181,7 @@ function borrows_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
     }
     else {
       $node->content['borrows_instructions'] = array(
-        '#value' => '<div id="borrows-instructions">' . t('You must be logged in to start booking.') . '</div>',
+        '#value' => '<div id="borrows-instructions"><p>' . t('You must be logged in to start booking.') . '</p></div>',
         '#weight' => 101,
       );
     }
