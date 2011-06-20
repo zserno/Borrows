@@ -510,7 +510,7 @@ function borrows_get_settings() {
 function borrows_views_api() {
   return array(
     'api' => '2.0',
-    'path' => drupal_get_path('module', 'borrows') . '/includes/views',
+    'path' => drupal_get_path('module', 'borrows') . '/views',
   );
 }
 
@@ -527,23 +527,7 @@ function borrows_views_handlers() {
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
-      'views_handler_field_borrows_resource_link' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'views_handler_field.inc',
-      ),
       'views_handler_field_borrows_booking_link_edit' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'views_handler_field.inc',
-      ),
-      'views_handler_field_borrows_availability_link_edit' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'views_handler_field.inc',
-      ),
-      'views_handler_field_borrows_resource_link_edit' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'views_handler_field.inc',
-      ),
-      'views_handler_field_borrows_title' => array(
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
