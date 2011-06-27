@@ -20,7 +20,7 @@ class views_handler_field_borrows_booking_link_edit extends views_handler_field_
   function render($values) {
     parent::render($values);
     $record_id = $values->{$this->aliases['record_id']};
-    return l(t('edit'), "admin/content/borrows/booking/$record_id/edit");
+    return l(t('edit'), "borrows/$record_id/edit");
   }
 }
 
@@ -28,7 +28,7 @@ class views_handler_field_borrows_booking_link_delete extends views_handler_fiel
   function render($values) {
     parent::render($values);
     $record_id = $values->{$this->aliases['record_id']};
-    return l(t('delete'), "admin/content/borrows/booking/$record_id/delete");
+    return l(t('delete'), "borrows/$record_id/delete");
   }
 }
 

@@ -18,16 +18,29 @@ function borrows_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['borrows_booking'] = array(
-    'page callback' => 'borrows_booking',
-    'access callback' => 'user_is_logged_in',
-    'type' => MENU_CALLBACK,
-  );
-
   $items['borrows-review'] = array(
     'page callback' => 'borrows_review_page',
     //'page arguments' => array('borrows_review_form'),
     'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['borrows/%bookingsapi_booking/edit'] = array(
+    'title' => t('Edit booking'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('borrows_booking_edit_form', 1),
+    'access arguments' => array('administer bookings'),
+    'file' => 'borrows.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['borrows/%bookingsapi_booking/delete'] = array(
+    'title' => t('Delete booking'),
+    'page callback' => 'borrows_booking_delete',
+    'page arguments' => array(1),
+    'access arguments' => array('administer bookings'),
+    'page arguments' => array(1),
+    'file' => 'borrows.admin.inc',
     'type' => MENU_CALLBACK,
   );
 
@@ -201,6 +214,18 @@ function borrows_bookingsapi_booking_postsave($op, $record) {
 }
 
 /**
+ * Implementation of hook_bookingsapi_booking().
+ * Delete additional client info from borrows_client table.
+ */
+function borrows_bookingsapi_booking($op, $record) {
+  switch ($op) {
+    case 'delete':
+      db_query("DELETE FROM {borrows_clients} WHERE record_id=%d", $record['record_id']);
+      break;
+  }
+}
+
+/**
  * AJAX callback.
  * @return Number of allowed days for a booking.
  */
@@ -228,7 +253,7 @@ function borrows_ajax($nid = NULL) {
  * Handle booking request.
  * @see borrows_review_form_submit.
  */
-function borrows_booking($node, $start, $end, $phone, $comment = '') {
+function borrows_booking($node, $start, $end, $phone, $comment = '', $record_id = NULL) {
   global $user;
   // And here we go.
   $booking = array(
@@ -245,6 +270,11 @@ function borrows_booking($node, $start, $end, $phone, $comment = '') {
     'comments' =>  check_plain($comment),
     'uid' => $user->uid,
   );
+
+  // Update.
+  if ($record_id) {
+    $booking['record_id'] = $record_id;
+  }
 
   $booking_result = bookingsapi_booking_save($booking);
   $success = $booking_result[0];
@@ -284,7 +314,7 @@ function borrows_review_page() {
 /**
  * Booking review form.
  */
-function borrows_review_form($form_state, $node, $start, $end) {
+function borrows_review_form($form_state, $node = array(), $start = NULL, $end = NULL) {
   global $user;
   $account = user_load($user->uid);
 
@@ -300,7 +330,6 @@ function borrows_review_form($form_state, $node, $start, $end) {
 
   $form['borrows_details'] = array(
     '#value' => theme('borrows_details', $node),
-    //'#value' => theme('borrows_details', $node) . $start . '|' . $end,
   );
 
   $form['borrows_phone'] = array(
@@ -310,13 +339,14 @@ function borrows_review_form($form_state, $node, $start, $end) {
     '#size' => 64,
     '#maxlength' => 64,
     '#required' => TRUE,
-    '#default_value' => check_plain($account->profile_phone),
+    '#default_value' => ($form_state['values']['borrows_phone']) ? $form_state['values']['borrows_phone'] : $account->profile_phone,
   );
 
   $form['borrows_comment'] = array(
     '#type' => 'textarea',
     '#title' => t('Questions, comments'),
     '#description' => t('You can enter your comments here.'),
+    '#default_value' => $form_state['values']['borrows_comment'],
   );
 
   $form['borrows_terms'] = array(
@@ -382,7 +412,7 @@ function borrows_review_form_submit($form, &$form_state) {
   // If booking was successful show a message
   // and send notification emails.
   if ($result['success'] === TRUE) {
-    borrows_send_notifications($node, $start, $end, $phone, $comment = '');
+    borrows_send_notifications($node, $start, $end, $phone, $comment);
     drupal_set_message(t('Booking was successful.'));
   }
   else {
@@ -499,7 +529,6 @@ function borrows_get_settings() {
     'holidays' => $holidays,
     'weekends' => $weekends,
     'nid' => $node->nid,
-    'ajax_path' => url('borrows_booking'),
   );
 }
 

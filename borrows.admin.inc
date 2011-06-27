@@ -95,4 +95,105 @@ function borrows_admin_form(&$form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Bookings form.
+ *
+ * @param array $form_state
+ * @param array $booking
+ * @return array
+ */
+function borrows_booking_edit_form(&$form_state, $booking = array()) {
+  include_once('./'. drupal_get_path('module', 'bookingsapi') .'/bookingsapi.forms.inc');
+  $form = bookingsapi_booking_form($booking);
 
+  $form['basic']['resource_id']['#disabled'] = TRUE;
+  $form['basic']['name']['#access'] = FALSE;
+  $form['basic']['description']['#access'] = FALSE;
+  $form['basic']['rrule']['#access'] = FALSE;
+  $form['basic']['priority']['#access'] = FALSE;
+  $form['basic']['status']['#access'] = FALSE;
+  $form['delete']['#access'] = FALSE;
+
+  // Hide time part.
+  $form['basic']['start']['#date_format'] = 'YYYY-mm-dd';
+  $form['basic']['end']['#date_format'] = 'YYYY-mm-dd';
+
+  // Client infos.
+  $client = borrows_client_load($booking['record_id']);
+  $form_state['values']['borrows_comment'] = $client['comments'];
+  $form_state['values']['borrows_phone'] = $client['phone'];
+  $client_form = drupal_retrieve_form('borrows_review_form', $form_state);
+
+  $form['client'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#title' => t('Client informations'),
+  );
+  $form['client']['borrows_phone'] = $client_form['borrows_phone'];
+  $form['client']['borrows_comment'] = $client_form['borrows_comment'];
+
+  $form['#submit'] = array('borrows_booking_edit_form_submit');
+
+  return $form;
+}
+
+/**
+ * Submit handler of edit form.
+ */
+function borrows_booking_edit_form_submit($form, &$form_state) {
+  dpm($form_state['values']);
+  $values = $form_state['values'];
+  list($node, $start, $end, $phone, $comment) = array(node_load($resource_id), $values['start'], $values['end'], $values['borrows_phone'], $values['borrows_comment']);
+  // Record booking.
+  // @TODO Fix conflict issues. Somehow bookingsapi thinks edited booking is conflicting w/ itself.
+  $result = borrows_booking($node, $start, $end, $phone, $comment, $values['record_id']);
+
+  // If booking was successful show a message
+  // and send notification emails.
+  if ($result['success'] === TRUE) {
+    borrows_send_notifications($node, $start, $end, $phone, $comment);
+    drupal_set_message(t('Booking was successful.'));
+  }
+  else {
+    drupal_set_message(t('Booking failed. Reason: @reason.', array('@reason' => $result['message'])));
+  }
+
+  $form_state['redirect'] = 'node/' . $node->nid;
+}
+
+/**
+ * Load client related informations for a given booking record.
+ */
+function borrows_client_load($record_id) {
+  if ($record_id < 1) {
+    return FALSE;
+  }
+  $query = 'SELECT * FROM {borrows_clients} WHERE record_id=%d';
+  return db_fetch_array(db_query($query, $record_id));
+}
+
+/**
+ * Booking delete confirmation page.
+ * @param array $booking
+ */
+function borrows_booking_delete($booking) {
+  return drupal_get_form('borrows_booking_delete_confirm', $booking);
+}
+
+/**
+ * Booking delete confirmation form.
+ */
+function borrows_booking_delete_confirm(&$form_state, $booking) {
+  $form['#item'] = $booking;
+  $desc = t('Booking will be deleted.');
+  return confirm_form($form, t('Are you sure you want to delete this booking?'), '<front>', $desc, t('Delete'));
+}
+
+/**
+ * Booking delete.
+ */
+function borrows_booking_delete_confirm_submit($form, &$form_state) {
+  bookingsapi_record_delete($form['#item']);
+  drupal_set_message(t('The booking has been deleted.'));
+  $form_state['redirect'] = '<front>';
+}
