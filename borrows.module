@@ -531,6 +531,10 @@ function borrows_views_handlers() {
         'parent' => 'views_handler_field',
         'file' => 'views_handler_field.inc',
       ),
+      'views_handler_field_borrows_booking_link_delete' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'views_handler_field.inc',
+      ),
     ),
   );
 }
