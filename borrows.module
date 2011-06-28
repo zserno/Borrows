@@ -61,7 +61,7 @@ function borrows_menu() {
  * Implementation of hook_perm().
  */
 function borrows_perm() {
-  return array('administer borrows configuration');
+  return array('administer borrows configuration', 'administer bookings');
 }
 
 /**

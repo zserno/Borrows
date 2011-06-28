@@ -141,7 +141,6 @@ function borrows_booking_edit_form(&$form_state, $booking = array()) {
  * Submit handler of edit form.
  */
 function borrows_booking_edit_form_submit($form, &$form_state) {
-  dpm($form_state['values']);
   $values = $form_state['values'];
   list($node, $start, $end, $phone, $comment) = array(node_load($resource_id), $values['start'], $values['end'], $values['borrows_phone'], $values['borrows_comment']);
   // Record booking.
