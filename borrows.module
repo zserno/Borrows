@@ -537,12 +537,13 @@ function borrows_mail($key, &$message, $params) {
 
 function borrows_mail_tokens($params) {
   $location_node_url = node_load($params['node']->field_borrow_location[0]['nid']);
+
   $tokens = array(
     '!username' => check_plain($params['account']->name),
     '!site' => variable_get('site_name', 'Drupal'),
     '!profile_realname' => check_plain($params['account']->profile_realname),
-    '!start' => check_plain($params['start']),
-    '!end' => check_plain($params['end']),
+    '!start' => _borrows_format_date($params['start']),
+    '!end' => _borrows_format_date($params['end']),
     '!node_title' => check_plain($params['node']->title),
     '!location_node_url' => url('node/' . $location_node_url->nid, array('absolute' => TRUE)),
     '!phone' => check_plain($params['phone']),
@@ -563,6 +564,17 @@ function borrows_client_load($record_id) {
 }
 
 /********** Private functions **********/
+
+/**
+ * Convert a datetime to custom time format.
+ * @param $date
+ *  Datetime as stored in bookings_records.start, e.g. 1970-01-01.
+ * @param $format
+ *  Custom date format string.
+ */
+function _borrows_format_date($date, $format = 'Y.m.d.') {
+  return format_date(strtotime($date), 'custom', $format);
+}
 
 /**
  * Get couple settings for client side actions.
