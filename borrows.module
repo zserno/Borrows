@@ -524,13 +524,21 @@ function borrows_mail($key, &$message, $params) {
       $message['subject'] = "Foglalás érkezett egy termékre";
       $message['body'][] = strtr(variable_get('borrows_admin_booking_template', ''), $variables);
       break;
+    case 'delete user':
+      $message['subject'] = "Lemondás visszaigazolás";
+      $message['body'][] = strtr(variable_get('borrows_user_cancellation_template', ''), $variables);
+      break;
+    case 'delete admin':
+      $message['subject'] = "Lemondás érkezett egy termékre";
+      $message['body'][] = strtr(variable_get('borrows_admin_cancellation_template', ''), $variables);
+      break;
   }
 }
 
 function borrows_mail_tokens($params) {
   $location_node_url = node_load($params['node']->field_borrow_location[0]['nid']);
   $tokens = array(
-    '!username' => check_plain($account->name),
+    '!username' => check_plain($params['account']->name),
     '!site' => variable_get('site_name', 'Drupal'),
     '!profile_realname' => check_plain($params['account']->profile_realname),
     '!start' => check_plain($params['start']),

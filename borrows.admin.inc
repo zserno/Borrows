@@ -181,7 +181,24 @@ function borrows_booking_delete_confirm(&$form_state, $booking) {
  * Booking delete.
  */
 function borrows_booking_delete_confirm_submit($form, &$form_state) {
+  global $user;
+
   bookingsapi_record_delete($form['#item']);
+
+  // Compose $params for notification mails.
+  $client = borrows_client_load($form['#item']['record_id']);
+  $params = $form['#item'];
+  $params['account'] = user_load($client['uid']);
+  $params['node'] = node_load($form['#item']['resource_id']);
+  $params['phone'] = $client['phone'];
+
+  // Send notification mail only if current user is deleting her own booking.
+  if ($client['uid'] == $user->uid) {
+    drupal_mail('borrows', 'delete user', $user->mail, user_preferred_language($user), $params);
+    drupal_mail('borrows', 'delete admin', variable_get('borrows_admin_mail', variable_get('site_mail', ini_get('sendmail_from'))), user_preferred_language($user), $params);
+  }
   drupal_set_message(t('The booking has been deleted.'));
+  // @TODO redirect to admin or user summary view of bookings,
+  // depending on where the user came from.
   $form_state['redirect'] = '<front>';
 }
