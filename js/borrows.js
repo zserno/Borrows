@@ -58,7 +58,6 @@
       }
 
       // Debug.
-      //console.log('Sempahore: ' + Drupal.settings.borrows.semaphore);
     }).parents('div.hok').addClass('borrows-available');
   }
 })(jQuery, Drupal)
@@ -116,7 +115,6 @@ function borrowsAjax(dataToSend, $checkbox) {
 
 // @TODO Implement me.
 function borrowsValidate(start, end) {
-  console.log("Valid.");
   return true;
 }
 
