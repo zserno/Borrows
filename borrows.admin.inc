@@ -183,14 +183,14 @@ function borrows_booking_delete_confirm(&$form_state, $booking) {
 function borrows_booking_delete_confirm_submit($form, &$form_state) {
   global $user;
 
-  bookingsapi_record_delete($form['#item']);
-
   // Compose $params for notification mails.
   $client = borrows_client_load($form['#item']['record_id']);
   $params = $form['#item'];
   $params['account'] = user_load($client['uid']);
   $params['node'] = node_load($form['#item']['resource_id']);
   $params['phone'] = $client['phone'];
+
+  bookingsapi_record_delete($form['#item']);
 
   // Send notification mail only if current user is deleting her own booking.
   if ($client['uid'] == $user->uid) {
