@@ -29,7 +29,8 @@ function borrows_menu() {
     'title' => t('Edit booking'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('borrows_booking_edit_form', 1),
-    'access arguments' => array('administer bookings'),
+    'access callback' => 'borrows_custom_access',
+    'access arguments' => array('edit', 1),
     'file' => 'borrows.admin.inc',
     'type' => MENU_CALLBACK,
   );
@@ -38,8 +39,8 @@ function borrows_menu() {
     'title' => t('Delete booking'),
     'page callback' => 'borrows_booking_delete',
     'page arguments' => array(1),
-    'access arguments' => array('administer bookings'),
-    'page arguments' => array(1),
+    'access callback' => 'borrows_custom_access',
+    'access arguments' => array('delete', 1),
     'file' => 'borrows.admin.inc',
     'type' => MENU_CALLBACK,
   );
@@ -61,7 +62,33 @@ function borrows_menu() {
  * Implementation of hook_perm().
  */
 function borrows_perm() {
-  return array('administer borrows configuration', 'administer bookings');
+  return array(
+    'administer borrows configuration',
+    'administer bookings',
+    'delete own booking',
+    'edit own booking',
+  );
+}
+
+/**
+ * Check permissions against a given operation.
+ * @param $op
+ *  Operation: values: edit, delete.
+ * @param $booking
+ *  Loaded bookingsapi_booking array.
+ */
+function borrows_custom_access($op, $booking) {
+  global $user;
+  // @TODO Check if bookingsapi_booking_load() has some hook for loading additional data.
+  $client = borrows_client_load($booking['record_id']);
+  switch ($op) {
+    case 'delete':
+      return user_access('administer bookings') || user_access('delete own booking') && ($user->uid === $client['uid']);
+      break;
+    case 'edit':
+      return user_access('administer bookings') || user_access('edit own booking') && ($user->uid === $client['uid']);
+      break;
+  }
 }
 
 /**
@@ -514,6 +541,17 @@ function borrows_mail_tokens($params) {
   );
 
   return $tokens;
+}
+
+/**
+ * Load client related informations for a given booking record.
+ */
+function borrows_client_load($record_id) {
+  if ($record_id < 1) {
+    return FALSE;
+  }
+  $query = 'SELECT * FROM {borrows_clients} WHERE record_id=%d';
+  return db_fetch_array(db_query($query, $record_id));
 }
 
 /********** Private functions **********/

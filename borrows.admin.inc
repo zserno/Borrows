@@ -102,7 +102,7 @@ function borrows_admin_form(&$form_state) {
  * @param array $booking
  * @return array
  */
-function borrows_booking_edit_form(&$form_state, $booking = array()) {
+function borrows_booking_edit_form(&$form_state, $booking) {
   include_once('./'. drupal_get_path('module', 'bookingsapi') .'/bookingsapi.forms.inc');
   $form = bookingsapi_booking_form($booking);
 
@@ -158,17 +158,6 @@ function borrows_booking_edit_form_submit($form, &$form_state) {
   }
 
   $form_state['redirect'] = 'node/' . $node->nid;
-}
-
-/**
- * Load client related informations for a given booking record.
- */
-function borrows_client_load($record_id) {
-  if ($record_id < 1) {
-    return FALSE;
-  }
-  $query = 'SELECT * FROM {borrows_clients} WHERE record_id=%d';
-  return db_fetch_array(db_query($query, $record_id));
 }
 
 /**
