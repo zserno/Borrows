@@ -120,17 +120,25 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       drupal_add_js(array('borrows' => borrows_get_settings()), 'setting', 'footer');
       $calendar->nid = arg(1);
       break;
+
     case 'alter':
+      // Only authenticated users can add booking.
       if (!$user->uid) {
         return;
       }
       $is_weekend = in_array($date->weekday, array('sa', 'su'));
-
-      // Do not allow booking for past days, today and tomorrow.
       // strtotime() needs a bit of help.
       $day = strtotime($date->day . '-' . $date->month . '-' . $date->year);
       $prebooking = variable_get('borrows_prebooking', BORROWS_PREBOOKING_DAYS);
-      $is_allowed = ($day >= (strtotime('tomorrow') + (24 * 60 * 60)) && $day <= strtotime('today') + $prebooking * 24 * 60 * 60);
+
+      // Do not allow booking for past days.
+      $is_allowed = (($day <= strtotime('today') + $prebooking * 24 * 60 * 60) && ($day >= strtotime('today')));
+
+      // Only admins can add booking for today and tomorrow.
+      if (!user_access('administer borrows configuration')) {
+        // Do not allow booking for today and tomorrow.
+        $is_allowed &= ($day >= (strtotime('tomorrow') + (24 * 60 * 60)));
+      }
 
       // Convert to hungarian date format to make comparison easy.
       $date_hu = date('Y-m-d', strtotime($date->year . '-' . $date->month . '-' . $date->day));
@@ -321,6 +329,17 @@ function borrows_booking($node, $start, $end, $phone, $comment = '', $record_id 
   return array('success' => $success, 'message' => $message);
 }
 
+function boorrows_booking_validate($nid, $start, $end) {
+  $node = node_load($nid);
+  if ($node) {
+    // I. Weekends.
+
+    // II.
+  }
+  else {
+    return FALSE;
+  }
+}
 
 function borrows_review_page() {
   if (empty($_POST)) {
