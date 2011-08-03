@@ -109,7 +109,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       $calendar->weekdays = array(
         'mo' => 'H',
         'tu' => 'K',
-        'we' => 'SZ',
+        'we' => 'SZE',
         'th' => 'CS',
         'fr' => 'P',
         'sa' => 'SZ',
@@ -126,7 +126,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       if (!$user->uid) {
         return;
       }
-      $is_weekend = in_array($date->weekday, array('sa', 'su'));
+      $is_weekend = in_array($date->weekday, array('SZ', 'V'));
       // strtotime() needs a bit of help.
       $day = strtotime($date->day . '-' . $date->month . '-' . $date->year);
       $prebooking = variable_get('borrows_prebooking', BORROWS_PREBOOKING_DAYS);
@@ -150,7 +150,7 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
           $is_weekend = TRUE;
         }
       }
-      // Remove weekday flag, if $day is a working day.
+      // Remove weekend flag, if $day is a working weekend day.
       if ($is_weekend) {
         $weekends = explode("\r\n", variable_get('borrows_weekends', NULL));
         if (in_array($date_hu, array_values((array)$weekends))) {
@@ -603,8 +603,8 @@ function borrows_get_settings() {
   $holidays = explode("\r\n", variable_get('borrows_holidays', NULL));
   $weekends = explode("\r\n", variable_get('borrows_weekends', NULL));
   return array(
-    'holidays' => $holidays,
-    'weekends' => $weekends,
+    'publicHolidays' => $holidays,
+    'workingWeekends' => $weekends,
     'nid' => $node->nid,
   );
 }
