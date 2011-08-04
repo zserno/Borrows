@@ -15,7 +15,7 @@
     $("#borrows-form").remove();
 
     $("#calendar .week input.form-checkbox").click(function() {
-      // We're at the beginnign of the booking process.
+      // We're at the beginning of the booking process.
       // No checkboxes are checked at this point.
       if (Drupal.settings.borrows.semaphore == false) {
         Drupal.settings.borrows.semaphore = true;
@@ -65,18 +65,23 @@
 function borrowsAjax(dataToSend, $checkbox) {
   $.getJSON(Drupal.settings.basePath + 'borrows_ajax/' + dataToSend.nid, function(data) {
 
-    // We keep the next (allowed_days - 1) number of checkboxes,
+    // We keep the next [allowed_days - 1] number of checkboxes,
     // since current one is already checked.
     var i = data.allowed_days - 1;
     $checkbox.addClass('borrows-available');
 
     $parent = $checkbox.parents('div.hok');
     // Go through current week.
+    // @TODO consider merging these 2 each() structures into one,
+    // e.g. $.each($parent.nextAll('div.hok').find('input[type=checkbox]')
     $.each($parent.nextAll('div.hok'), function(index) {
       $.each($(this).find('input[type=checkbox]'), function(j) {
         if (i > 0) {
           $(this).addClass('borrows-available');
-          i--;
+          // Wekend day does not count into allowed days.
+          if (!$(this).hasClass('borrows-weekend')) {
+            i--;
+          }
         }
       });
     });
@@ -108,14 +113,18 @@ function borrowsAjax(dataToSend, $checkbox) {
     submit += '</form>';
 
     $("#block-calendar_block-0").append($(submit).submit(function() {
-      borrowsSubmit();
+      return borrowsSubmit();
     }));
   });
 }
 
-// @TODO Implement me.
 function borrowsValidate(start, end) {
-  return true;
+  // Check if start or end is weekend day.
+  var valid = true;
+  valid = valid && !$("#borrowdate-" + start).hasClass('borrows-weekend');
+  valid = valid && !$("#borrowdate-" + end).hasClass('borrows-weekend');
+
+  return valid;
 }
 
 // Submit callback.
@@ -133,6 +142,7 @@ function borrowsSubmit() {
   }
   else {
     // Nice error message here...
+    $('<div class="messages error">' + Drupal.t('Validation error: start or end date cannot be weekend or public holiday.') + '</div>').insertBefore("#block-calendar_block-0").hide().fadeIn();
     return false;
   }
 }
