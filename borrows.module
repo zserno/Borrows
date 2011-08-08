@@ -7,6 +7,9 @@
 
 define("BORROWS_RESOURCE_CT", "bookingsapi_resource");
 define("BORROWS_PREBOOKING_DAYS", "60");
+define("BORROWS_RESOURCE_BASE_TID", "42");
+define("BORROWS_RESOURCE_VID", "7");
+
 
 /**
  * Implementation of hook_menu().
@@ -53,6 +56,13 @@ function borrows_menu() {
     'access arguments' => array('administer borrows configuration'),
     'type'             => MENU_NORMAL_ITEM,
     'file'             => 'borrows.admin.inc',
+  );
+
+  $items['borrows/autocomplete'] = array(
+    'title' => 'Autocomplete taxonomy',
+    'page callback' => 'borrows_autocomplete',
+    'access callback' => 'user_is_logged_in',
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -607,6 +617,24 @@ function borrows_get_settings() {
     'workingWeekends' => $weekends,
     'nid' => $node->nid,
   );
+}
+
+function borrows_autocomplete($string = '') {
+  $matches = array();
+
+  if ($string != '') {
+    $result = db_query_range(db_rewrite_sql("SELECT t.tid, t.name FROM {term_data} t WHERE t.vid = %d AND LOWER(t.name) LIKE LOWER('%%%s%%') ORDER BY t.name", 't', 'tid'), variable_get('borrows_resource_vid', BORROWS_RESOURCE_VID), $string, 0, 16);
+    while ($tag = db_fetch_object($result)) {
+      $n = $tag->name;
+      // Commas and quotes in terms are special cases, so encode 'em.
+      if (strpos($tag->name, ',') !== FALSE || strpos($tag->name, '"') !== FALSE) {
+        $n = '"'. str_replace('"', '""', $tag->name) .'"';
+      }
+      $matches[$tag->tid] = check_plain($tag->name);
+    }
+  }
+
+  drupal_json($matches);
 }
 
 /********** Views integration  **********/

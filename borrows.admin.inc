@@ -36,6 +36,15 @@ function borrows_admin_form(&$form_state) {
     '#rows' => 8,
   );
 
+  $form['borrows_resource_base_tid'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Base category of bookable resources'),
+    '#description' => t('Users are allowed to borrow only one of any resources at a time that is tagged with this term.'),
+    '#required' => TRUE,
+    '#default_value' => variable_get('borrows_resource_base_tid', BORROWS_RESOURCE_BASE_TID),
+    '#autocomplete_path' => 'borrows/autocomplete',
+  );
+
   $form['borrows_instructions'] = array(
     '#type' => 'textarea',
     '#title' => t('Booking instructions'),
