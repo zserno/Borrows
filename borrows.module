@@ -171,17 +171,19 @@ function borrows_calendar_block(&$calendar, &$date, $op) {
       // Check if current day is bookable using bookingsapi.
       $record = array(
         'resource_id' => $calendar->nid,
-        'start' => $date_hu . ' 01:00:00',
+        'start' => $date_hu . ' 02:00:00',
         'end' => $date_hu . ' 23:59:59',
       );
 
+      // Check date conflicts.
       $is_bookable = (bookingsapi_conflict_check($record) == BOOKINGSAPI_CONFLICTS_NO);
       $node = node_load($calendar->nid);
       $terms = taxonomy_node_get_terms_by_vocabulary($node, variable_get('borrows_resource_vid', BORROWS_RESOURCE_VID));
+      // Check if another item - tagged with the same term under a certain taxonomy level - is booked for this day.
       foreach($terms as $tid => $term) {
         $parents = taxonomy_get_parents($tid);
         if (in_array(variable_get('borrows_resource_base_tid', BORROWS_RESOURCE_BASE_TID), array_keys($parents))) {
-          $is_bookable &= !_borrows_check_taxonomy_conflict($tid, $node->nid, $record['start'], $record['end']);
+          $is_bookable &= _borrows_check_taxonomy_conflict($tid, $node->nid, $record['start'], $record['end']);
         }
       }
 
@@ -255,6 +257,19 @@ function borrows_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   }
 }
 
+/**
+ * Implementation of hook_bookingsapi_conflict_check().
+ */
+/*
+function borrows_bookingsapi_conflict_check($op, $record, $config) {
+  //dpm($record);
+  node_load($record['resource_id']);
+  list($start, $end) = array($record['start'], $record['end']);
+  //dpm($start);
+  //dpm($end);
+
+}
+*/
 /**
  * Implementation of hook_bookingsapi_booking_postsave().
  * Save additional client info to borrows_client table.
@@ -615,7 +630,9 @@ function _borrows_format_date($date, $format = 'Y.m.d.') {
 }
 
 /**
- * Check if user has already booked a resource for given date tagged with the given term.
+ * Check if user has already booked a resource for given date tagged
+ * with the given term.
+ * @see borrows_calendar_block().
  * @param $tid
  *  Term id.
  * @param $nid
@@ -624,10 +641,21 @@ function _borrows_format_date($date, $format = 'Y.m.d.') {
  *  Start date.
  * @param $end
  *  End date.
+ * @return
+ *  Bool. TRUE if no conflict found, else FALSE.
  */
 function _borrows_check_taxonomy_conflict($tid, $nid, $start, $end) {
-  // @TODO Implement me.
-  return FALSE;
+  global $user;
+  $resources = array();
+  $result = db_query("SELECT b.resource_id, b.start FROM {bookings_records} b INNER JOIN {borrows_clients} bc USING(record_id) INNER JOIN {term_node} t ON b.resource_id = t.nid WHERE bc.uid = %d AND t.tid = %d AND '%s' BETWEEN b.start AND b.end", $user->uid, $tid, $start);
+  while ($row = db_fetch_array($result)) {
+    $resources[] = $row;
+  }
+  // Conflicting booking found (term-based validation).
+  if (!empty($resources)) {
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
