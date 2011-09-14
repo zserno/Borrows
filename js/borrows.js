@@ -39,6 +39,11 @@
 
           // Check if no more active checkboxes left.
           if ($("#calendar .week input.form-checkbox[checked]").length == 0) {
+            // Block calendar with an overlay.
+            $("#calendar").block({
+              message: '<img src="' + Drupal.settings.basePath + 'sites/all/modules/borrows/images/loader.gif" /><h2>' + Drupal.t("Checking availability...") + '</h2>',
+              css: {width: 'auto', padding: '5px'},
+            });
             // Unset semaphore.
             Drupal.settings.borrows.semaphore = false;
             // Remove submit button.
