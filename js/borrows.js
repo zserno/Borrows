@@ -61,8 +61,6 @@
           $("#calendar .week input.form-checkbox:lt(" + current + ")").filter(":not(:checked)").attr('checked', true);
         }
       }
-
-      // Debug.
     }).parents('div.hok').addClass('borrows-available');
   }
 })(jQuery, Drupal)
@@ -83,7 +81,7 @@ function borrowsAjax(dataToSend, $checkbox) {
       $.each($(this).find('input[type=checkbox]'), function(j) {
         if (i > 0) {
           $(this).addClass('borrows-available');
-          // Wekend day does not count into allowed days.
+          // Weekend days don't count into allowed days.
           if (!$(this).hasClass('borrows-weekend')) {
             i--;
           }
